@@ -9,6 +9,7 @@ import helmet from 'helmet';
 import morgan from 'morgan';
 import { config } from './config';
 import { connectDB } from './database/connection';
+import { initGridFS } from './database/gridFS';
 
 const app = express();
 const PORT = config.port;
@@ -84,10 +85,11 @@ app.use('*', (req: Request, res: Response) => {
 // Start server
 const startServer = async () => {
 	try {
-		// Try to connect to database (optional for now)
 		try {
 			await connectDB.connect();
 			console.log('✅ MongoDB connected successfully');
+			initGridFS();
+			console.log('✅ GridFS initialized successfully');
 		} catch (dbError) {
 			console.log('⚠️ MongoDB connection failed, starting server without database');
 			console.log('   To fix: Install MongoDB locally or use MongoDB Atlas');
