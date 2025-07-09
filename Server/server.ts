@@ -2,7 +2,6 @@ import dotenv from 'dotenv';
 dotenv.config();
 console.log("DEBUG: MONGO_URI =", JSON.stringify(process.env.MONGO_URI));
 
-
 import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
@@ -10,6 +9,7 @@ import morgan from 'morgan';
 import { config } from './config';
 import { connectDB } from './database/connection';
 import { initGridFS } from './database/gridFS';
+import documentRoutes from './routes/documentRoutes';
 
 const app = express();
 const PORT = config.port;
@@ -21,6 +21,9 @@ app.use(morgan('combined')); // Logging
 app.use(express.json()); // Parse JSON bodies
 app.use(express.urlencoded({ extended: true })); // Parse URL-encoded bodies
 
+// Register routes BEFORE other routes
+app.use('/api/documents', documentRoutes);
+
 // Basic route
 app.get('/', (req: Request, res: Response) => {
 	res.json({
@@ -30,7 +33,9 @@ app.get('/', (req: Request, res: Response) => {
 		timestamp: new Date().toISOString(),
 		endpoints: {
 			health: 'GET /health',
-			apiStatus: 'GET /api/status'
+			apiStatus: 'GET /api/status',
+			documents: 'POST /api/documents/upload',
+			ai: 'POST /api/ai/process'
 		}
 	});
 });
@@ -56,7 +61,9 @@ app.get('/api/status', (req: Request, res: Response) => {
 			'Basic Express server',
 			'CORS enabled',
 			'Security headers',
-			'Request logging'
+			'Request logging',
+			'Document upload',
+			'AI processing'
 		]
 	});
 });
@@ -98,7 +105,7 @@ const startServer = async () => {
 		// Start Express server
 		app.listen(PORT, () => {
 			console.log(`🚀 Express Server is running on port ${PORT}`);
-			console.log(`📱 Health check: http://localhost:${PORT}/health`);
+			console.log(` Health check: http://localhost:${PORT}/health`);
 			console.log(`🌐 API status: http://localhost:${PORT}/api/status`);
 			console.log(`🔧 Environment: ${config.environment}`);
 			console.log(`🗄️ Database: ${connectDB.getConnectionStatus() ? 'Connected' : 'Disconnected'}`);
