@@ -1,21 +1,21 @@
 import express from 'express';
 import multer from 'multer';
-import { uploadDocuments, getComparisonDetails, downloadOutputFile } from '../controllers/documentController';
+import {
+	uploadDocuments,
+	compareDocuments,
+	getComparisonDetails,
+	downloadOutputFile,
+} from '../controllers/documentController';
 
 const router = express.Router();
+const upload = multer({ dest: 'uploads/' });
 
-const storage = multer.diskStorage({
-	destination: './uploads/',
-	filename: (_: any, file: any, cb: any) => {
-		cb(null, Date.now() + '-' + file.originalname);
-	},
-});
-
-const upload = multer({ storage });
-
-// More flexible route that accepts any files
-router.post('/upload', upload.any(), uploadDocuments);
+router.post('/upload', upload.fields([
+	{ name: 'fileA', maxCount: 1 },
+	{ name: 'fileB', maxCount: 1 },
+]), uploadDocuments);
+router.post('/compare/:id', compareDocuments);
 router.get('/:id', getComparisonDetails);
-router.get('/:id/output', downloadOutputFile);
+router.get('/output/:id', downloadOutputFile);
 
 export default router;

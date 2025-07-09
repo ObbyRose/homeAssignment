@@ -23,8 +23,8 @@ const ComparisonSchema = new Schema<IComparison>(
 		fileBType: { type: String, required: true },
 		fileAId: { type: Schema.Types.ObjectId, required: true },
 		fileBId: { type: Schema.Types.ObjectId, required: true },
-		outputFileId: { type: Schema.Types.ObjectId }, // optional
-		outputFileType: { type: String }, // optional
+        outputFileId: { type: mongoose.Schema.Types.ObjectId },
+        outputFileType: { type: String, enum: ['pdf', 'word', 'excel'] },
 		status: {
 			type: String,
 			enum: ['pending', 'processing', 'done', 'error'],

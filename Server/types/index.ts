@@ -17,3 +17,11 @@ export interface ApiResponse<T = any> {
 	error?: string;
 	timestamp: string;
 } 
+
+export interface DiffChunk {
+	index: number;
+	textA: string;
+	textB: string;
+	diffHtml: string;
+	hasDifference: boolean;
+}
