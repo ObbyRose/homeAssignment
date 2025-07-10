@@ -20,11 +20,7 @@ class ConnectDB {
 			return;
 		}
 		try {
-			console.log('🔗 Attempting to connect to MongoDB...');
-			console.log('🔍 Raw URI:', JSON.stringify(config.mongoUri));
-
-			console.log('📍 URI:', config.mongoUri.replace(/\/\/.*@/, '//***:***@')); // Hide credentials
-			
+			console.log('🔗 Attempting to connect to MongoDB...');		
 			await mongoose.connect(config.mongoUri, {
 
 				maxPoolSize: 10,
@@ -54,7 +50,7 @@ class ConnectDB {
 
 		} catch (error) {
 			console.error('❌ Failed to connect to MongoDB:', error);
-			console.error('💡 Check your MongoDB Atlas credentials and network connection');
+			console.error('Check your MongoDB Atlas credentials and network connection');
 			throw error;
 		}
 	}

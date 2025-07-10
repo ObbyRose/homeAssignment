@@ -20,8 +20,7 @@ app.use(cors());
 app.use(morgan('combined')); // Logging
 app.use(express.json()); // Parse JSON bodies
 app.use(express.urlencoded({ extended: true })); // Parse URL-encoded bodies
-
-// Register routes BEFORE other routes
+// Document Routes
 app.use('/api/documents', documentRoutes);
 
 // Basic route
@@ -31,11 +30,13 @@ app.get('/', (req: Request, res: Response) => {
 		status: 'running',
 		version: '1.0.0',
 		timestamp: new Date().toISOString(),
+		environment: config.environment,
 		endpoints: {
 			health: 'GET /health',
-			apiStatus: 'GET /api/status',
 			documents: 'POST /api/documents/upload',
-			ai: 'POST /api/ai/process'
+			compare: 'POST /api/documents/compare/:id',
+			details: 'GET /api/documents/:id',
+			download: 'GET /api/documents/output/:id'
 		}
 	});
 });
@@ -48,23 +49,6 @@ app.get('/health', (req: Request, res: Response) => {
 		timestamp: new Date().toISOString(),
 		version: '1.0.0',
 		environment: config.environment
-	});
-});
-
-// API status endpoint
-app.get('/api/status', (req: Request, res: Response) => {
-	res.json({
-		message: 'Express Server API is working!',
-		version: '1.0.0',
-		environment: config.environment,
-		features: [
-			'Basic Express server',
-			'CORS enabled',
-			'Security headers',
-			'Request logging',
-			'Document upload',
-			'AI processing'
-		]
 	});
 });
 
@@ -99,16 +83,14 @@ const startServer = async () => {
 			console.log('✅ GridFS initialized successfully');
 		} catch (dbError) {
 			console.log('⚠️ MongoDB connection failed, starting server without database');
-			console.log('   To fix: Install MongoDB locally or use MongoDB Atlas');
 		}
 		
 		// Start Express server
 		app.listen(PORT, () => {
-			console.log(`🚀 Express Server is running on port ${PORT}`);
-			console.log(` Health check: http://localhost:${PORT}/health`);
-			console.log(`🌐 API status: http://localhost:${PORT}/api/status`);
-			console.log(`🔧 Environment: ${config.environment}`);
-			console.log(`🗄️ Database: ${connectDB.getConnectionStatus() ? 'Connected' : 'Disconnected'}`);
+			console.log(`Express Server is running on port ${PORT}`);
+			console.log(`Health check: http://localhost:${PORT}/health`);
+			console.log(`Environment: ${config.environment}`);
+			console.log(`Database: ${connectDB.getConnectionStatus() ? 'Connected' : 'Disconnected'}`);
 		});
 	} catch (error) {
 		console.error('❌ Failed to start server:', error);

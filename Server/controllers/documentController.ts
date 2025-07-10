@@ -12,7 +12,6 @@ import { generateAndSavePdfWithDifferences } from '../services/createPdfWithDiff
 import { generateAndSaveWordWithDifferences } from '../services/createWordWithDiff';
 import { generateAndSaveExcelWithDifferences } from '../services/createExcelWithDiff';
 
-// Constants
 const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
 const ALLOWED_FILE_TYPES = ['pdf', 'word', 'excel'];
 
@@ -25,7 +24,6 @@ const cleanupTempFiles = (files: (Express.Multer.File | undefined)[]) => {
 	});
 };
 
-// Helper function to validate file
 const validateFile = (file: Express.Multer.File | undefined): string | null => {
 	if (!file) return 'File is required';
 	
@@ -77,16 +75,14 @@ export const uploadDocuments = async (req: Request, res: Response) => {
 
 		const bucket = getGridFSBucket();
 
-		// Upload files with proper error handling
+		// Upload files
 		try {
-			// Upload file A
 			const fileAStream = fs.createReadStream(fileA_.path);
 			const uploadA = bucket.openUploadStream(fileA_.originalname, {
 				contentType: fileA_.mimetype,
 			});
 			fileAStream.pipe(uploadA);
 
-			// Upload file B
 			const fileBStream = fs.createReadStream(fileB_.path);
 			const uploadB = bucket.openUploadStream(fileB_.originalname, {
 				contentType: fileB_.mimetype,
@@ -185,7 +181,7 @@ export const compareDocuments = async (req: Request, res: Response) => {
 		
 		const chunksB = await splitDocumentToChunks(fileBComparison);
 
-		console.log('🧠 Comparing...');
+		console.log('Comparing...');
 		const results = await compareAllChunks(chunksA, chunksB);
 
 		// Convert results to DiffChunk format

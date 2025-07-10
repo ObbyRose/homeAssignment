@@ -82,7 +82,7 @@ const splitPdf = async (buffer: Buffer, comparisonId: string): Promise<ChunkResu
 		});
 	});
 
-	console.log(`📄 PDF split into ${chunks.length} chunks`);
+	console.log(`PDF split into ${chunks.length} chunks`);
 	return chunks;
 };
 
@@ -99,7 +99,7 @@ const splitWord = async (buffer: Buffer, comparisonId: string): Promise<ChunkRes
 		});
 	});
 
-	console.log(`📝 Word split into ${chunks.length} chunks`);
+	console.log(`Word split into ${chunks.length} chunks`);
 	return chunks;
 };
 
@@ -125,6 +125,6 @@ const splitExcel = async (buffer: Buffer, comparisonId: string): Promise<ChunkRe
 		});
 	}
 
-	console.log(`📊 Excel split into ${chunks.length} chunks`);
+	console.log(`Excel split into ${chunks.length} chunks`);
 	return chunks;
 };
