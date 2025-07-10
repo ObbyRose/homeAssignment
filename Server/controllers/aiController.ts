@@ -13,10 +13,10 @@ export const compareDocuments = async (req: Request, res: Response) => {
 		}
 
 		// שלב 1: חילוץ צ'אנקים משני הקבצים
-		console.log('🔄 Splitting File A...');
+		console.log('Splitting File A...');
 		const chunksA = await splitDocumentToChunks(comparison);
 
-		console.log('🔄 Splitting File B...');
+		console.log('Splitting File B...');
 		const tempComparisonB = new Comparison({
 			...comparison.toObject(),
 			fileAId: comparison.fileBId,
