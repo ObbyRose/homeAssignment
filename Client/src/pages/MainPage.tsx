@@ -175,6 +175,7 @@ export default function MainPage() {
 					onDragOver={handleDragOver}
 					onDragLeave={handleDragLeave}
 					onDrop={handleDrop}
+					disabled={isComparing}
 				/>
 
 				{/* File Previews */}

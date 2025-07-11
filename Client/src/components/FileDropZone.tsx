@@ -1,4 +1,5 @@
 import { useRef } from "react";
+import { toast } from "sonner";
 
 interface FileDropZoneProps {
 	onFilesSelect: (files: FileList | null) => void;
@@ -6,6 +7,7 @@ interface FileDropZoneProps {
 	onDragOver: (e: React.DragEvent) => void;
 	onDragLeave: (e: React.DragEvent) => void;
 	onDrop: (e: React.DragEvent) => void;
+	disabled?: boolean;
 }
 
 export default function FileDropZone({
@@ -14,8 +16,35 @@ export default function FileDropZone({
 	onDragOver,
 	onDragLeave,
 	onDrop,
+	disabled = false,
 }: FileDropZoneProps) {
 	const fileInputRef = useRef<HTMLInputElement>(null);
+
+	const handleClick = () => {
+		if (disabled) {
+			toast.info("Please wait for the current comparison to finish.");
+			return;
+		}
+		fileInputRef.current?.click();
+	};
+
+	const handleDropZoneDragOver = (e: React.DragEvent) => {
+		if (disabled) {
+			e.preventDefault();
+			toast.info("Please wait for the current comparison to finish.");
+			return;
+		}
+		onDragOver(e);
+	};
+
+	const handleDropZoneDrop = (e: React.DragEvent) => {
+		if (disabled) {
+			e.preventDefault();
+			toast.info("Please wait for the current comparison to finish.");
+			return;
+		}
+		onDrop(e);
+	};
 
 	return (
 		<div
@@ -23,10 +52,10 @@ export default function FileDropZone({
 				isDragOver 
 					? 'border-primary bg-primary/5' 
 					: 'border-muted-foreground/25 hover:border-primary/50'
-			}`}
-			onDragOver={onDragOver}
+			} ${disabled ? 'opacity-50 pointer-events-none' : ''}`}
+			onDragOver={handleDropZoneDragOver}
 			onDragLeave={onDragLeave}
-			onDrop={onDrop}
+			onDrop={handleDropZoneDrop}
 		>
 			<div className="space-y-4">
 				<div className="text-4xl">📄</div>
@@ -35,8 +64,9 @@ export default function FileDropZone({
 						Drag and drop your files here, or{" "}
 						<button
 							type="button"
-							className="text-primary cursor-pointer hover:underline"
-							onClick={() => fileInputRef.current?.click()}
+							className="text-primary hover:underline"
+							onClick={handleClick}
+							disabled={disabled}
 						>
 							click to browse
 						</button>
@@ -54,6 +84,7 @@ export default function FileDropZone({
 				accept=".pdf,.docx,.xlsx"
 				className="hidden"
 				onChange={(e) => onFilesSelect(e.target.files)}
+				disabled={disabled}
 			/>
 		</div>
 	);
