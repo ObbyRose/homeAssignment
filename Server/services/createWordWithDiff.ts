@@ -21,6 +21,14 @@ function getWordDiffRuns(original: string, modified: string, type: 'original' | 
 	}).filter(Boolean) as TextRun[];
 }
 
+// Map outputFileType to the correct extension
+function getExtension(type: string | undefined) {
+	if (!type) return 'pdf';
+	if (type === 'word') return 'docx';
+	if (type === 'excel') return 'xlsx';
+	return type; // pdf, etc.
+}
+
 export const generateAndSaveWordWithDifferences = async (
 	comparison: IComparison,
 	differences: DiffChunk[]

@@ -261,15 +261,20 @@ export const downloadOutputFile = async (req: Request, res: Response) => {
 			new mongoose.Types.ObjectId(comparison.outputFileId)
 		);
 
+		function getExtension(type: string | undefined) {
+			if (!type) return 'pdf';
+			if (type === 'word') return 'docx';
+			if (type === 'excel') return 'xlsx';
+			return type;
+		}
+
 		res.setHeader('Content-Type', 'application/octet-stream');
 		res.setHeader(
 			'Content-Disposition',
-			`attachment; filename="comparison-${comparison._id}.${comparison.outputFileType || 'pdf'}"`
+			`attachment; filename="comparison-${comparison._id}.${getExtension(comparison.outputFileType)}"`
 		);
 
 		stream.pipe(res);
-		
-		// Return undefined since we're streaming the response
 		return;
 	} catch (err) {
 		return res.status(500).json({ error: 'Failed to download file' });
