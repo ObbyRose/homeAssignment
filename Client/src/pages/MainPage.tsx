@@ -92,14 +92,30 @@ export default function MainPage() {
 			setIsComparing(true);
 			
 			toast.info("Comparing documents...");
+
+			const totalDuration = 85 * 1000;
+			const intervalMs = 200; 
+			const startTime = Date.now();
+			let progress = 0;
+			setCompareProgress(0);
+
+			let finished = false;
+
+			const progressTimer = setInterval(() => {
+				if (finished) return;
+				const elapsed = Date.now() - startTime;
+				progress = Math.min(100, (elapsed / totalDuration) * 100);
+				setCompareProgress(progress);
+				if (progress >= 100) {
+					clearInterval(progressTimer);
+				}
+			}, intervalMs);
+
 			await compareDocuments(id);
-			
-			// Simulate progress for comparison
-			for (let i = 0; i <= 100; i += 10) {
-				setCompareProgress(i);
-				await new Promise(resolve => setTimeout(resolve, 100));
-			}
-			
+			finished = true;
+			setCompareProgress(100);
+			clearInterval(progressTimer);
+
 			setIsComparing(false);
 			setComparisonId(id);
 			toast.success("Comparison completed!");
@@ -107,6 +123,7 @@ export default function MainPage() {
 		} catch (error) {
 			setIsUploading(false);
 			setIsComparing(false);
+			setCompareProgress(0);
 			if (axios.isAxiosError(error)) {
 				toast.error(error.response?.data?.error || error.message);
 			} else {
