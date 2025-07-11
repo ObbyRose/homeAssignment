@@ -3,7 +3,6 @@ import { getGridFSBucket } from '../database/gridFS';
 import { IComparison } from '../database/models/comparisonModel';
 import mongoose from 'mongoose';
 import { DiffChunk } from '../types';
-import { diffArrays } from 'diff';
 import { diffWords } from 'diff';
 
 // Tokenize by word and punctuation
