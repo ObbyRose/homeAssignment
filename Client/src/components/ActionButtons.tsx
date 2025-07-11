@@ -22,7 +22,7 @@ export default function ActionButtons({
 			<Button
 				onClick={onCompare}
 				disabled={!canCompare}
-				className="flex-1"
+				className="flex-1 cursor-pointer"
 				size="lg"
 			>
 				{isUploading ? "Uploading..." : isComparing ? "Comparing..." : "Compare Documents"}
@@ -33,6 +33,7 @@ export default function ActionButtons({
 					onClick={onDownload}
 					variant="outline"
 					size="lg"
+                    className="cursor-pointer"
 				>
 					Download Comparison
 				</Button>

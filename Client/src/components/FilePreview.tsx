@@ -89,6 +89,7 @@ export default function FilePreview({
 						size="sm"
 						onClick={() => onRemoveFile(index)}
 						disabled={isUploading || isComparing}
+                        className="cursor-pointer"
 					>
 						Remove
 					</Button>

@@ -35,7 +35,7 @@ export default function FileDropZone({
 						Drag and drop your files here, or{" "}
 						<button
 							type="button"
-							className="text-primary hover:underline"
+							className="text-primary cursor-pointer hover:underline"
 							onClick={() => fileInputRef.current?.click()}
 						>
 							click to browse
