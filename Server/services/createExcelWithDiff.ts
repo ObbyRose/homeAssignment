@@ -4,6 +4,21 @@ import { IComparison } from '../database/models/comparisonModel';
 import mongoose from 'mongoose';
 import stream from 'stream';
 import { DiffChunk } from '../types';
+import { diffWords } from 'diff';
+
+function getExcelDiffFragments(original: string, modified: string, type: 'original' | 'modified') {
+	const diff = diffWords(original, modified);
+	return diff.map(part => {
+		if (type === 'original' && part.removed) {
+			return { text: part.value, color: { argb: 'FFFF0000' } }; // red
+		} else if (type === 'modified' && part.added) {
+			return { text: part.value, color: { argb: 'FF0000FF' } }; // blue
+		} else if (!part.added && !part.removed) {
+			return { text: part.value, color: { argb: 'FF000000' } }; // black
+		}
+		return null;
+	}).filter(Boolean) as { text: string, color: { argb: string } }[];
+}
 
 export const generateAndSaveExcelWithDifferences = async (
 	comparison: IComparison,
@@ -14,26 +29,26 @@ export const generateAndSaveExcelWithDifferences = async (
 
 	worksheet.columns = [
 		{ header: 'Chunk #', key: 'index', width: 10 },
-		{ header: 'Original', key: 'textA', width: 50 },
-		{ header: 'Modified', key: 'textB', width: 50 },
+		{ header: 'Original', key: 'textA', width: 80 },
+		{ header: 'Modified', key: 'textB', width: 80 },
 		{ header: 'Has Difference', key: 'hasDifference', width: 15 },
 	];
 
 	differences.forEach((diff) => {
-		worksheet.addRow({
+		const row = worksheet.addRow({
 			index: diff.index,
-			textA: diff.textA,
-			textB: diff.textB,
+			textA: '', // We'll fill this with rich text below
+			textB: '',
 			hasDifference: diff.hasDifference ? 'Yes' : 'No',
 		});
-	});
 
-	worksheet.eachRow((row, rowIndex) => {
-		if (rowIndex > 1 && row.getCell(4).value === 'Yes') {
-			row.eachCell((cell) => {
-				cell.font = { color: { argb: 'FFFF0000' } };
-			});
-		}
+		// Set rich text for Original
+		const origFragments = getExcelDiffFragments(diff.textA, diff.textB, 'original');
+		row.getCell('textA').value = { richText: origFragments.map(frag => ({ text: frag.text, font: { color: frag.color } })) };
+
+		// Set rich text for Modified
+		const modFragments = getExcelDiffFragments(diff.textA, diff.textB, 'modified');
+		row.getCell('textB').value = { richText: modFragments.map(frag => ({ text: frag.text, font: { color: frag.color } })) };
 	});
 
 	const buffer = await workbook.xlsx.writeBuffer();
