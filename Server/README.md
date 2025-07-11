@@ -63,6 +63,3 @@ npm run dev
 ## Environment Variables
 
 Create a `.env` file in the `Server` directory with the following (fill in the next values):
-PORT=5000
-NODE_ENV="development"
-MONGO_URI=mongodb+srv://dreapet41s:admin@filereader.z0hi01b.mongodb.net/?retryWrites=true&w=majority&appName=FileReader
