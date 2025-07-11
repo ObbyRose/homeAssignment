@@ -12,7 +12,7 @@ export interface ChunkResult {
 	comparisonId: string;
 }
 
-const MAX_CHUNK_SIZE = 1024;
+const MAX_CHUNK_SIZE = 2000; // Increased for better context
 
 export const splitDocumentToChunks = async (comparison: IComparison): Promise<ChunkResult[]> => {
 	if (!comparison._id) {
@@ -44,41 +44,55 @@ const streamToBuffer = async (stream: Readable): Promise<Buffer> => {
 	return Buffer.concat(chunks);
 };
 
-// Helper to split long paragraphs
-const splitLongTextToChunks = (text: string): string[] => {
-	const paragraphs = text.split('\n');
+// Smart chunking that respects sentence and paragraph boundaries
+const splitTextIntoSentences = (text: string): string[] => {
+	// Split by sentence endings, but be smart about it
+	const sentences = text.split(/(?<=[.!?])\s+/);
+	return sentences.filter(sentence => sentence.trim().length > 0);
+};
+
+const splitTextIntoChunks = (text: string): string[] => {
+	const sentences = splitTextIntoSentences(text);
 	const chunks: string[] = [];
 	let currentChunk = '';
 
-	for (const paragraph of paragraphs) {
-		if ((currentChunk + paragraph).length + 1 <= MAX_CHUNK_SIZE) {
-			currentChunk += paragraph + '\n';
+	for (const sentence of sentences) {
+		// If adding this sentence would exceed max size, start a new chunk
+		if (currentChunk.length + sentence.length > MAX_CHUNK_SIZE && currentChunk.length > 0) {
+			chunks.push(currentChunk.trim());
+			currentChunk = sentence;
 		} else {
-			if (currentChunk.trim()) chunks.push(currentChunk.trim());
-			if (paragraph.length > MAX_CHUNK_SIZE) {
-				for (let i = 0; i < paragraph.length; i += MAX_CHUNK_SIZE) {
-					chunks.push(paragraph.slice(i, i + MAX_CHUNK_SIZE).trim());
-				}
-				currentChunk = '';
-			} else {
-				currentChunk = paragraph + '\n';
-			}
+			currentChunk += (currentChunk ? ' ' : '') + sentence;
 		}
 	}
-	if (currentChunk.trim()) chunks.push(currentChunk.trim());
+
+	// Add the last chunk
+	if (currentChunk.trim()) {
+		chunks.push(currentChunk.trim());
+	}
+
 	return chunks;
 };
 
-// PDF
+// PDF splitting with better text preservation
 const splitPdf = async (buffer: Buffer, comparisonId: string): Promise<ChunkResult[]> => {
 	const data = await pdfParse(buffer);
-	const pages = data.text.split(/\f/);
 	const chunks: ChunkResult[] = [];
+	let chunkIndex = 0;
 
+	// Split by pages first, then by sentences
+	const pages = data.text.split(/\f/);
+	
 	pages.forEach((page, pageIndex) => {
-		const subChunks = splitLongTextToChunks(page);
-		subChunks.forEach((chunk, i) => {
-			chunks.push({ chunk, index: pageIndex * 100 + i, comparisonId });
+		if (page.trim().length === 0) return;
+		
+		const pageChunks = splitTextIntoChunks(page);
+		pageChunks.forEach((chunk, i) => {
+			chunks.push({
+				chunk,
+				index: chunkIndex++,
+				comparisonId
+			});
 		});
 	});
 
@@ -86,16 +100,25 @@ const splitPdf = async (buffer: Buffer, comparisonId: string): Promise<ChunkResu
 	return chunks;
 };
 
-// Word
+// Word splitting with better text preservation
 const splitWord = async (buffer: Buffer, comparisonId: string): Promise<ChunkResult[]> => {
 	const result = await mammoth.extractRawText({ buffer });
-	const paragraphs = result.value.split(/\n+/);
 	const chunks: ChunkResult[] = [];
+	let chunkIndex = 0;
 
-	paragraphs.forEach((p, paragraphIndex) => {
-		const subChunks = splitLongTextToChunks(p);
-		subChunks.forEach((chunk, i) => {
-			chunks.push({ chunk, index: paragraphIndex * 100 + i, comparisonId });
+	// Split by paragraphs first, then by sentences
+	const paragraphs = result.value.split(/\n+/);
+	
+	paragraphs.forEach((paragraph, paragraphIndex) => {
+		if (paragraph.trim().length === 0) return;
+		
+		const paragraphChunks = splitTextIntoChunks(paragraph);
+		paragraphChunks.forEach((chunk, i) => {
+			chunks.push({
+				chunk,
+				index: chunkIndex++,
+				comparisonId
+			});
 		});
 	});
 
@@ -103,25 +126,28 @@ const splitWord = async (buffer: Buffer, comparisonId: string): Promise<ChunkRes
 	return chunks;
 };
 
-// Excel
+// Excel splitting with better text preservation
 const splitExcel = async (buffer: Buffer, comparisonId: string): Promise<ChunkResult[]> => {
 	const workbook = new ExcelJS.Workbook();
 	await workbook.xlsx.load(buffer);
 
 	const chunks: ChunkResult[] = [];
-	let globalIndex = 0;
+	let chunkIndex = 0;
 
 	for (const worksheet of workbook.worksheets) {
-		worksheet.eachRow((row) => {
+		worksheet.eachRow((row, rowIndex) => {
 			const rowText = (row.values as any[])
 				.slice(1)
 				.map((cell: any) => (cell?.toString ? cell.toString() : ''))
 				.join(' | ');
 
-			const subChunks = splitLongTextToChunks(rowText);
-			subChunks.forEach((chunk) => {
-				chunks.push({ chunk, index: globalIndex++, comparisonId });
-			});
+			if (rowText.trim().length > 0) {
+				chunks.push({
+					chunk: rowText.trim(),
+					index: chunkIndex++,
+					comparisonId
+				});
+			}
 		});
 	}
 

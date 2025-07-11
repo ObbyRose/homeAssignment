@@ -24,4 +24,6 @@ export interface DiffChunk {
 	textB: string;
 	diffHtml: string;
 	hasDifference: boolean;
+	originalIndex?: number; // Track original chunk position
+	modifiedIndex?: number; // Track modified chunk position
 }

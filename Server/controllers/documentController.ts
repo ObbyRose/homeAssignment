@@ -75,34 +75,36 @@ export const uploadDocuments = async (req: Request, res: Response) => {
 
 		const bucket = getGridFSBucket();
 
-		// Upload files
+		// Upload files in parallel for better performance
 		try {
-			const fileAStream = fs.createReadStream(fileA_.path);
-			const uploadA = bucket.openUploadStream(fileA_.originalname, {
-				contentType: fileA_.mimetype,
-			});
-			fileAStream.pipe(uploadA);
-
-			const fileBStream = fs.createReadStream(fileB_.path);
-			const uploadB = bucket.openUploadStream(fileB_.originalname, {
-				contentType: fileB_.mimetype,
-			});
-			fileBStream.pipe(uploadB);
-
-			// Wait for both uploads to complete
-			await new Promise<void>((resolve, reject) => {
-				uploadA.on('finish', () => {
-					uploadB.on('finish', () => resolve());
-					uploadB.on('error', (error: any) => {
-						cleanupTempFiles([fileA_, fileB_]);
-						reject(new Error('Failed to upload file B'));
+			const uploadPromises = [
+				// Upload file A
+				new Promise<mongoose.Types.ObjectId>((resolve, reject) => {
+					const fileAStream = fs.createReadStream(fileA_.path);
+					const uploadA = bucket.openUploadStream(fileA_.originalname, {
+						contentType: fileA_.mimetype,
 					});
-				});
-				uploadA.on('error', (error: any) => {
-					cleanupTempFiles([fileA_, fileB_]);
-					reject(new Error('Failed to upload file A'));
-				});
-			});
+					fileAStream.pipe(uploadA);
+					
+					uploadA.on('finish', () => resolve(uploadA.id as mongoose.Types.ObjectId));
+					uploadA.on('error', (error: any) => reject(new Error('Failed to upload file A')));
+				}),
+				
+				// Upload file B
+				new Promise<mongoose.Types.ObjectId>((resolve, reject) => {
+					const fileBStream = fs.createReadStream(fileB_.path);
+					const uploadB = bucket.openUploadStream(fileB_.originalname, {
+						contentType: fileB_.mimetype,
+					});
+					fileBStream.pipe(uploadB);
+					
+					uploadB.on('finish', () => resolve(uploadB.id as mongoose.Types.ObjectId));
+					uploadB.on('error', (error: any) => reject(new Error('Failed to upload file B')));
+				})
+			];
+
+			// Wait for both uploads to complete in parallel
+			const [fileAId, fileBId] = await Promise.all(uploadPromises);
 
 			// Create comparison record
 			const comparison = await Comparison.create({
@@ -110,8 +112,8 @@ export const uploadDocuments = async (req: Request, res: Response) => {
 				fileBName: fileB_.originalname,
 				fileAType: getFileType(fileA_.mimetype),
 				fileBType: getFileType(fileB_.mimetype),
-				fileAId: uploadA.id,
-				fileBId: uploadB.id,
+				fileAId: fileAId,
+				fileBId: fileBId,
 				status: 'pending',
 			});
 

@@ -10,8 +10,10 @@
 		"watch": "ts-node --watch server.ts"
 	},
 	"dependencies": {
+		"@types/diff": "^7.0.2",
 		"axios": "^1.10.0",
 		"cors": "^2.8.5",
+		"diff": "^8.0.2",
 		"diff-match-patch": "^1.0.5",
 		"docx": "^9.5.1",
 		"dotenv": "^16.3.1",
