@@ -154,6 +154,116 @@ Modified: This is a completely new paragraph that didn't exist before.
 
 ---
 
+## 📊 **How to Read Excel Comparison Reports**
+
+Excel reports provide a structured, tabular view of document differences that's particularly useful for data-heavy documents.
+
+### 📋 **Excel Report Structure**
+
+#### **Worksheet Layout**
+- **Sheet Name**: "Comparison"
+- **Columns**:
+  - **Chunk #**: Sequential number of each text segment
+  - **Original**: Content from the first document (File A)
+  - **Modified**: Content from the second document (File B)
+  - **Has Difference**: "Yes" or "No" indicating if differences were found
+
+#### **Row-by-Row Analysis**
+Each row represents a chunk (text segment) from your documents:
+- **Row 1**: Header row with column names
+- **Data Rows**: Each subsequent row shows one chunk comparison
+- **Empty Rows**: Skipped if no content exists in that position
+
+### 🎨 **Excel Color Coding**
+
+#### **Rich Text Formatting**
+Excel uses rich text formatting to highlight differences within cells:
+
+- **🔴 Red text**: Content that was removed in the modified version
+- **🔵 Blue text**: Content that was added in the modified version  
+- **⚫ Black text**: Content that remains unchanged
+
+#### **Cell-Level Differences**
+Unlike PDF reports, Excel shows differences at the cell level:
+- **Single cell** can contain multiple colors
+- **Inline highlighting** within the same cell
+- **Preserves formatting** while showing changes
+
+### 📊 **Excel-Specific Features**
+
+#### **Row-Based Processing**
+- **Each row** from the original Excel file becomes a chunk
+- **Row content** is extracted as text separated by ` | ` (pipe character)
+- **Empty rows** are automatically filtered out
+- **Multiple worksheets** are processed sequentially
+
+#### **Data Extraction Method**
+```
+Original Excel Row: [Header, Value1, Value2, Value3]
+Extracted Text: "Value1 | Value2 | Value3"
+```
+
+#### **Advantages of Excel Reports**
+- **Sortable**: You can sort by any column
+- **Filterable**: Filter by "Has Difference" to focus on changes
+- **Searchable**: Use Excel's search function to find specific content
+- **Exportable**: Easy to export to other formats
+- **Printable**: Clean table format for printing
+
+### 📖 **How to Use Excel Reports Effectively**
+
+1. **Start with the overview**:
+   - Look at the "Has Difference" column to identify rows with changes
+   - Use Excel's filter function to show only rows with differences
+
+2. **Analyze specific chunks**:
+   - Click on any cell to see the full content
+   - Use Excel's zoom function to read small text
+   - Copy specific cells for further analysis
+
+3. **Use Excel features**:
+   - **Sort** by Chunk # to follow document order
+   - **Filter** by "Has Difference = Yes" to focus on changes
+   - **Search** for specific terms using Ctrl+F
+   - **Freeze panes** to keep headers visible while scrolling
+
+4. **Export and share**:
+   - Save as PDF for sharing
+   - Export to CSV for data analysis
+   - Print specific sections
+
+### 💡 **Excel vs PDF Comparison**
+
+| Feature | Excel Report | PDF Report |
+|---------|-------------|------------|
+| **Format** | Tabular, structured | Linear, document-like |
+| **Search** | Excel search function | PDF search function |
+| **Sorting** | Sortable columns | Fixed order |
+| **Filtering** | Filter by differences | Manual scanning |
+| **Export** | Multiple formats | PDF only |
+| **Data Analysis** | Excel formulas possible | Limited |
+| **Printing** | Clean table format | Document format |
+
+### 🔍 **Excel Chunking Process**
+
+1. **Worksheet Processing**: Each worksheet is processed separately
+2. **Row Extraction**: Each non-empty row becomes a chunk
+3. **Cell Concatenation**: Cell values are joined with ` | ` separator
+4. **Text Normalization**: Empty cells are handled gracefully
+5. **Chunk Numbering**: Sequential numbering across all worksheets
+
+### 📝 **Example Excel Report Row**
+
+```
+Chunk # | Original                    | Modified                    | Has Difference
+--------|----------------------------|----------------------------|----------------
+5       | [Red]Old Value[/Red] | New | [Blue]New Value[/Blue] | New | Yes
+```
+
+**Note**: The actual Excel file will show colored text, not markup tags.
+
+---
+
 ## Running the Backend
 
 ```bash
