@@ -1,6 +1,5 @@
 import dotenv from 'dotenv';
 dotenv.config();
-console.log("DEBUG: MONGO_URI =", JSON.stringify(process.env.MONGO_URI));
 
 import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';

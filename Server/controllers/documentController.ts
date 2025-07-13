@@ -7,7 +7,7 @@ import { getFileType } from '../utils/fileUtil';
 import { DiffChunk } from '../types';
 
 import { splitDocumentToChunks } from '../services/splitDocumentToChunks';
-import { compareAllChunks, ChunkComparisonResult } from '../services/compareChunksWithAi';
+import { compareAllChunks, ChunkComparisonResult } from '../services/compareChunks';
 import { generateAndSavePdfWithDifferences } from '../services/createPdfWithDiff';
 import { generateAndSaveWordWithDifferences } from '../services/createWordWithDiff';
 import { generateAndSaveExcelWithDifferences } from '../services/createExcelWithDiff';
